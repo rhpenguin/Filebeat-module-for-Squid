@@ -4,7 +4,8 @@
     "grok": {
       "field": "message",
       "patterns":[
-        "%{IPORHOST:squid.access.client_ip}:%{NUMBER:squid.access.client_port} %{DATA:squid.access.user_ident} %{DATA:squid.access.user_name} \"%{DATA:squid.access.method} %{DATA:squid.access.url} HTTP/%{DATA:squid.access.http_version}\" %{NUMBER:squid.access.response_code} %{NUMBER:squid.access.sent_bytes} %{NUMBER:squid.access.received_bytes} \"%{DATA:squid.access.referrer}\" \"%{DATA:squid.access.agent}\" %{DATA:squid.access.squid_status}:%{DATA:squid.access.squid_hier} \\[%{NUMBER:squid.access.unix_time}\\] %{IPORHOST:squid.access.server_ip}:%{NUMBER:squid.access.server_port} %{IPORHOST:squid.access.server_fqdn}"
+        "%{IPORHOST:squid.access.client_ip}:%{NUMBER:squid.access.client_port} %{DATA:squid.access.user_ident} %{DATA:squid.access.user_name} \"%{DATA:squid.access.method} %{DATA:squid.access.url} HTTP/%{DATA:squid.access.http_version}\" %{NUMBER:squid.access.response_code} %{NUMBER:squid.access.sent_bytes} %{NUMBER:squid.access.received_bytes} \"%{DATA:squid.access.referrer}\" \"%{DATA:squid.access.agent}\" %{DATA:squid.access.squid_status}:%{DATA:squid.access.squid_hier} \\[%{NUMBER:squid.access.unix_time}\\] %{IPORHOST:squid.access.server_ip}:%{DATA:squid.access.server_port} %{IPORHOST:squid.access.server_fqdn}",
+        "%{IPORHOST:squid.access.client_ip}:%{NUMBER:squid.access.client_port} %{DATA:squid.access.user_ident} %{DATA:squid.access.user_name} \"%{DATA:squid.access.method} %{DATA:squid.access.url} HTTP/%{DATA:squid.access.http_version}\" %{NUMBER:squid.access.response_code} %{NUMBER:squid.access.sent_bytes} %{NUMBER:squid.access.received_bytes} \"%{DATA:squid.access.referrer}\" \"%{DATA:squid.access.agent}\" %{DATA:squid.access.squid_status}:%{DATA:squid.access.squid_hier} \\[%{NUMBER:squid.access.unix_time}\\] -:- -"
         ],
       "ignore_missing": true,
       "ignore_failure": true
