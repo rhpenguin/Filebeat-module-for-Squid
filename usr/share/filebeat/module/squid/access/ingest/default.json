@@ -20,6 +20,11 @@
         "ignore_failure": true
       }
   }, {
+    "remove": {
+      "field": "message",
+      "ignore_failure": true
+    }
+  }, {
     "user_agent": {
       "field": "squid.access.agent",
       "target_field": "squid.access.user_agent",
@@ -34,12 +39,8 @@
   }, {
     "geoip": {
       "field": "squid.access.server_ip",
-      "target_field": "squid.access.geoip"
-    }
-  }, {
-    "remove": {
-      "field": "message",
-      "ignore_failure": true
+      "target_field": "squid.access.geoip",
+      "ignore_missing": true
     }
   }],
   "on_failure" : [{
