@@ -1,52 +1,123 @@
 {
-  "description": "Pipeline for parsing Squid access logs. Requires the geoip and user_agent plugins.",
-  "processors": [{
-    "grok": {
-      "field": "message",
-      "patterns":[
-        "%{IPORHOST:squid.access.client_ip}:%{NUMBER:squid.access.client_port} %{DATA:squid.access.user_ident} %{DATA:squid.access.user_name} \"%{DATA:squid.access.method} %{DATA:squid.access.url} HTTP/%{DATA:squid.access.http_version}\" %{NUMBER:squid.access.response_code} %{NUMBER:squid.access.sent_bytes} %{NUMBER:squid.access.received_bytes} \"%{DATA:squid.access.referrer}\" \"%{DATA:squid.access.agent}\" %{DATA:squid.access.squid_status}:%{DATA:squid.access.squid_hier} \\[%{NUMBER:squid.access.unix_time}\\] %{IPORHOST:squid.access.server_ip}:%{NUMBER:squid.access.server_port} %{IPORHOST:squid.access.server_fqdn}",
-        "%{IPORHOST:squid.access.client_ip}:%{NUMBER:squid.access.client_port} %{DATA:squid.access.user_ident} %{DATA:squid.access.user_name} \"%{DATA:squid.access.method} %{DATA:squid.access.url} HTTP/%{DATA:squid.access.http_version}\" %{NUMBER:squid.access.response_code} %{NUMBER:squid.access.sent_bytes} %{NUMBER:squid.access.received_bytes} \"%{DATA:squid.access.referrer}\" \"%{DATA:squid.access.agent}\" %{DATA:squid.access.squid_status}:%{DATA:squid.access.squid_hier} \\[%{NUMBER:squid.access.unix_time}\\] -:- -"
-        ],
-      "ignore_missing": true,
-      "ignore_failure": true
-    }
-  }, {
-      "date": {
-        "field": "squid.access.unix_time",
-        "target_field": "squid.access.time",
-        "formats": [
-            "UNIX_MS"
-        ],
-        "ignore_failure": true
-      }
-  }, {
-    "remove": {
-      "field": "message",
-      "ignore_failure": true
-    }
-  }, {
-    "user_agent": {
-      "field": "squid.access.agent",
-      "target_field": "squid.access.user_agent",
-      "ignore_failure": true
-    }
-  }, {
-    "rename": {
-      "field": "squid.access.agent",
-      "target_field": "squid.access.user_agent.original",
-      "ignore_failure": true
-    }
-  }, {
-    "geoip": {
-      "field": "squid.access.server_ip",
-      "target_field": "squid.access.geoip",
-      "ignore_missing": true
-    }
-  }],
-  "on_failure" : [{
-    "set" : {
-      "field" : "error.message",
-      "value" : "{{ _ingest.on_failure_message }}"
-    }
-  }]
+    "description": "Pipeline for parsing Squid access logs. Requires the geoip and user_agent plugins.",
+    "processors": [
+        {
+            "grok": {
+                "field": "message",
+                "patterns": [
+                    "%{IPORHOST:source.address}:%{NUMBER:source.port} %{DATA:user.id} %{DATA:user.name} \"%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}\" %{NUMBER:http.response.status_code:long} %{NUMBER:http.request.bytes:long} %{NUMBER:http.response.bytes:long} \"%{DATA:http.request.referrer}\" \"%{DATA:user_agent.original}\" %{DATA:squid.access.squid_status}:%{DATA:squid.access.squid_hier} \\[%{NUMBER:squid.access.unix_time}\\] %{IPORHOST:destination.ip}:%{NUMBER:destination.port} %{IPORHOST:destination.domain}",
+                    "%{IPORHOST:source.address}:%{NUMBER:source.port} %{DATA:user.id} %{DATA:user.name} \"%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}\" %{NUMBER:http.response.status_code:long} %{NUMBER:http.request.bytes:long} %{NUMBER:http.response.bytes:long} \"%{DATA:http.request.referrer}\" \"%{DATA:user_agent.original}\" %{DATA:squid.access.squid_status}:%{DATA:squid.access.squid_hier} \\[%{NUMBER:squid.access.unix_time}\\] -:- -"
+                ],
+                "ignore_missing": true,
+                "ignore_failure": true
+            }
+        },
+        {
+            "grok": {
+                "field": "source.address",
+                "ignore_missing": true,
+                "ignore_failure": true,
+                "patterns": [
+                    "^(%{IP:source.ip}|%{HOSTNAME:source.domain})$"
+                ]
+            }
+        },
+        {
+            "rename": {
+                "field": "@timestamp",
+                "target_field": "event.created",
+                "ignore_failure": true
+            }
+        },
+        {
+            "date": {
+                "field": "squid.access.unix_time",
+                "target_field": "@timestamp",
+                "formats": [
+                    "UNIX_MS"
+                 ],
+                "ignore_failure": true
+            }
+        },
+        {
+            "user_agent": {
+                "field": "user_agent.original",
+                "ignore_failure": true
+            }
+        },
+        {
+            "geoip": {
+                "field": "source.ip",
+                "target_field": "source.geo",
+                "ignore_missing": true
+            }
+        },
+        {
+            "geoip": {
+                "database_file": "GeoLite2-ASN.mmdb",
+                "field": "source.ip",
+                "target_field": "source.as",
+                "properties": [
+                    "asn",
+                    "organization_name"
+                ],
+                "ignore_missing": true
+            }
+        },
+        {
+            "rename": {
+                "field": "source.as.asn",
+                "target_field": "source.as.number",
+                "ignore_missing": true
+            }
+        },
+        {
+            "rename": {
+                "field": "source.as.organization_name",
+                "target_field": "source.as.organization.name",
+                "ignore_missing": true
+            }
+        },
+        {
+            "geoip": {
+                "field": "destination.ip",
+                "target_field": "destination.geo",
+                "ignore_missing": true
+            }
+        },
+        {
+            "geoip": {
+                "database_file": "GeoLite2-ASN.mmdb",
+                "field": "destination.ip",
+                "target_field": "destination.as",
+                "properties": [
+                    "asn",
+                    "organization_name"
+                ],
+                "ignore_missing": true
+            }
+        },
+        {
+            "rename": {
+                "field": "destination.as.asn",
+                "target_field": "destination.as.number",
+                "ignore_missing": true
+            }
+        },
+        {
+            "rename": {
+                "field": "destination.as.organization_name",
+                "target_field": "destination.as.organization.name",
+                "ignore_missing": true
+            }
+        }
+    ],
+    "on_failure": [
+        {
+            "set": {
+                "field": "error.message",
+                "value": "{{ _ingest.on_failure_message }}"
+            }
+        }
+    ]
 }

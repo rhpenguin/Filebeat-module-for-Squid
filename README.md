@@ -7,6 +7,6 @@ https://www.jpcert.or.jp/research/apt-loganalysis.html
 - Software Versions:
   * Ubuntu 18.04
   * Squid: Squid Cache: Version 3.5.27
-  * Filebeat: filebeat version 6.6.0 (amd64), libbeat 6.6.0
+  * Filebeat: filebeat version 7.4.1 (amd64)
 
 
